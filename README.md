@@ -42,16 +42,8 @@ namespaces = {
 }
 ```
 
-### 3. Set PowerShell Aliases (Windows Only)
 
-If using PowerShell and commands aren't recognized:
-
-```powershell
-Set-Alias -Name aws -Value "C:\Program Files\Amazon\AWSCLIV2\aws.exe"
-Set-Alias -Name terraform -Value "C:\terraform\terraform.exe"
-```
-
-### 4. Create S3 Tables Bucket
+### 3. Create S3 Tables Bucket
 
 The bucket must be created via AWS CLI due to a Terraform provider limitation:
 
@@ -59,7 +51,7 @@ The bucket must be created via AWS CLI due to a Terraform provider limitation:
 aws s3tables create-table-bucket --name your-unique-bucket-name --region ap-southeast-3
 ```
 
-### 5. Deploy Infrastructure
+### 4. Deploy Infrastructure
 
 ```bash
 terraform init
