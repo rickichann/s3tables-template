@@ -13,12 +13,6 @@ This project provisions AWS S3 Tables infrastructure including:
 
 Before you begin, ensure you have:
 
-- **AWS CLI** installed and configured
-  - Download: https://aws.amazon.com/cli/
-  - Verify: `aws --version`
-- **Terraform** installed (v1.0+)
-  - Download: https://www.terraform.io/downloads
-  - Verify: `terraform version`
 - **AWS Credentials** with permissions for:
   - `s3tables:*`
   - `glue:*`
@@ -185,21 +179,8 @@ aws s3tables delete-table-bucket \
 └── README.md           # This file
 ```
 
-## Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
-
-## License
-
-This project is licensed under the MIT License.
 
 ## Resources
 
 - [AWS S3 Tables Documentation](https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-tables.html)
-- [Apache Iceberg Documentation](https://iceberg.apache.org/)
-- [Terraform AWS Provider](https://registry.terraform.io/providers/hashicorp/aws/latest/docs)
-- [AWS Athena with Iceberg](https://docs.aws.amazon.com/athena/latest/ug/querying-iceberg.html)
