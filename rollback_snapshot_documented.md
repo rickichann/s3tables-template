@@ -14,7 +14,7 @@
     "spark.sql.extensions": "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions",
     "spark.sql.catalog.s3tables": "org.apache.iceberg.spark.SparkCatalog",
     "spark.sql.catalog.s3tables.catalog-impl": "software.amazon.s3tables.iceberg.S3TablesCatalog",
-    "spark.sql.catalog.s3tables.warehouse": "arn:aws:s3tables:ap-southeast-3:339712808680:bucket/sandbox-bucket-fresh",
+    "spark.sql.catalog.s3tables.warehouse": "<arn_tables>:bucket/sandbox-bucket-fresh",
     "spark.sql.defaultCatalog": "s3tables"
   }
 }
