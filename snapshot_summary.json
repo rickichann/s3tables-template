@@ -1,0 +1,17 @@
+{"summary":{"trino_query_id":"20260227_031952_00385_x3324","added-position-delete-files":"3","added-delete-files":"3","added-files-size":"3744","added-position-deletes":"5","changed-partition-count":"3","total-records":"10","total-files-size":"5956","total-data-files":"3","total-delete-files":"3","total-position-deletes":"5","total-equality-deletes":"0"}}
+{"summary":{"trino_query_id":"20260225_024401_00043_vz9ts","added-data-files":"1","added-records":"1","added-files-size":"879","changed-partition-count":"1","total-records":"10","total-files-size":"2212","total-data-files":"3","total-delete-files":"0","total-position-deletes":"0","total-equality-deletes":"0"}}
+{"summary":{"trino_query_id":"20260225_023714_00160_a6txf","added-data-files":"2","added-records":"9","added-files-size":"1333","changed-partition-count":"2","total-records":"9","total-files-size":"1333","total-data-files":"2","total-delete-files":"0","total-position-deletes":"0","total-equality-deletes":"0"}}
+
+| Field                     | Value                       | What It Means                                                    |
+| ------------------------- | --------------------------- | ---------------------------------------------------------------- |
+| `trino_query_id`          | 20260225_023714_00160_a6txf | The Trino query that performed this operation.                   |
+| `added-data-files`        | 2                           | Iceberg created 2 new Parquet data files.                        |
+| `added-records`           | 9                           | 9 rows were inserted in this operation.                          |
+| `added-files-size`        | 1333 bytes                  | Total size of the 2 newly created data files.                    |
+| `changed-partition-count` | 2                           | The insert affected 2 different partitions (2 different months). |
+| `total-records`           | 9                           | Total logical rows in the table after this commit.               |
+| `total-files-size`        | 1333 bytes                  | Total size of all active files in the table at this time.        |
+| `total-data-files`        | 2                           | Total active data files in the table.                            |
+| `total-delete-files`      | 0                           | No delete files exist yet.                                       |
+| `total-position-deletes`  | 0                           | No row-level deletes have happened.                              |
+| `total-equality-deletes`  | 0                           | No equality-based deletes have happened.                         |
