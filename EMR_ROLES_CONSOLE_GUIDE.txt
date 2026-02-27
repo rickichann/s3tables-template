@@ -1,0 +1,226 @@
+# Create EMR Runtime Roles via AWS Console
+
+Step-by-step guide to create EMR roles for S3 Tables using AWS Console.
+
+## Part 1: Create EMR Service Role
+
+### Step 1: Go to IAM Console
+1. Open AWS Console: https://console.aws.amazon.com/iam/
+2. Click **Roles** in the left sidebar
+3. Click **Create role** button
+
+### Step 2: Select Trusted Entity
+1. Select **AWS service**
+2. Under "Use case", select **EMR**
+3. Select **EMR** (not EMR Serverless)
+4. Click **Next**
+
+### Step 3: Add Permissions
+1. Search and select: **AmazonEMRServicePolicy_v2**
+2. Click **Next**
+
+### Step 4: Name and Create
+1. Role name: `EMR_DefaultRole_S3Tables`
+2. Description: `Service role for EMR to manage clusters`
+3. Click **Create role**
+
+---
+
+## Part 2: Create EMR EC2 Instance Profile Role
+
+### Step 1: Create Role
+1. Go to IAM → Roles → **Create role**
+2. Select **AWS service**
+3. Under "Use case", select **EC2**
+4. Click **Next**
+
+### Step 2: Add Permissions
+1. Search and select: **AmazonElasticMapReduceforEC2Role**
+2. Click **Next**
+
+### Step 3: Name and Create
+1. Role name: `EMR_EC2_DefaultRole_S3Tables`
+2. Description: `Instance profile role for EMR EC2 instances`
+3. Click **Create role**
+
+### Step 4: Create Custom Policy for S3 Tables
+1. Go to IAM → **Policies** → **Create policy**
+2. Click **JSON** tab
+3. Paste this policy:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3tables:GetTable",
+        "s3tables:GetTableBucket",
+        "s3tables:GetTableMetadataLocation",
+        "s3tables:GetNamespace",
+        "s3tables:ListTables",
+        "s3tables:ListNamespaces",
+        "s3tables:ListTableBuckets",
+        "s3tables:CreateTable",
+        "s3tables:DeleteTable",
+        "s3tables:CreateNamespace"
+      ],
+      "Resource": [
+        "arn:aws:s3tables:ap-southeast-3:339712808680:bucket/sandbox-bucket-fresh",
+        "arn:aws:s3tables:ap-southeast-3:339712808680:bucket/sandbox-bucket-fresh/*"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:DeleteObject",
+        "s3:ListBucket"
+      ],
+      "Resource": [
+        "arn:aws:s3:::*--table-s3/*",
+        "arn:aws:s3:::*--table-s3"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "glue:GetDatabase",
+        "glue:GetTable",
+        "glue:GetTables",
+        "glue:GetPartition",
+        "glue:GetPartitions",
+        "glue:CreateTable",
+        "glue:UpdateTable",
+        "glue:DeleteTable",
+        "glue:BatchCreatePartition",
+        "glue:BatchDeletePartition",
+        "glue:BatchUpdatePartition"
+      ],
+      "Resource": [
+        "arn:aws:glue:ap-southeast-3:339712808680:catalog",
+        "arn:aws:glue:ap-southeast-3:339712808680:database/*",
+        "arn:aws:glue:ap-southeast-3:339712808680:table/*/*"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents",
+        "logs:DescribeLogStreams"
+      ],
+      "Resource": "arn:aws:logs:ap-southeast-3:339712808680:log-group:/aws/emr/*"
+    }
+  ]
+}
+```
+
+4. Click **Next**
+5. Policy name: `S3TablesAccessPolicy`
+6. Description: `Policy for EMR to access S3 Tables`
+7. Click **Create policy**
+
+### Step 5: Attach Custom Policy to EMR EC2 Role
+1. Go to IAM → Roles
+2. Search and click: `EMR_EC2_DefaultRole_S3Tables`
+3. Click **Add permissions** → **Attach policies**
+4. Search and select: `S3TablesAccessPolicy`
+5. Click **Add permissions**
+
+---
+
+## Part 3: Create EMR Serverless Job Execution Role
+
+### Step 1: Create Role
+1. Go to IAM → Roles → **Create role**
+2. Select **AWS service**
+3. Under "Use case", select **EMR Serverless**
+4. Click **Next**
+
+### Step 2: Add Permissions
+1. Search and select: `S3TablesAccessPolicy` (created earlier)
+2. Click **Next**
+
+### Step 3: Name and Create
+1. Role name: `EMRServerless_JobRole_S3Tables`
+2. Description: `Job execution role for EMR Serverless`
+3. Click **Create role**
+
+---
+
+## Part 4: Verify Roles
+
+### Check EMR Service Role
+1. Go to IAM → Roles
+2. Search: `EMR_DefaultRole_S3Tables`
+3. Verify it has: **AmazonEMRServicePolicy_v2**
+
+### Check EMR EC2 Role
+1. Search: `EMR_EC2_DefaultRole_S3Tables`
+2. Verify it has:
+   - **AmazonElasticMapReduceforEC2Role**
+   - **S3TablesAccessPolicy**
+
+### Check EMR Serverless Role
+1. Search: `EMRServerless_JobRole_S3Tables`
+2. Verify it has: **S3TablesAccessPolicy**
+
+---
+
+## Part 5: Use Roles in EMR
+
+### For EMR Cluster (EC2-based)
+When creating an EMR cluster:
+1. Go to EMR Console → **Create cluster**
+2. Under "Security and access":
+   - **Service role**: Select `EMR_DefaultRole_S3Tables`
+   - **Instance profile**: Select `EMR_EC2_DefaultRole_S3Tables`
+
+### For EMR Serverless
+When creating an EMR Serverless application:
+1. Go to EMR Studio → **Applications** → **Create application**
+2. Under "Application settings":
+   - **Execution role**: Select `EMRServerless_JobRole_S3Tables`
+
+---
+
+## Summary
+
+You've created 3 roles:
+
+| Role Name | Purpose | Used For |
+|-----------|---------|----------|
+| `EMR_DefaultRole_S3Tables` | Service role | EMR cluster management |
+| `EMR_EC2_DefaultRole_S3Tables` | Instance profile | EC2 instances in EMR cluster |
+| `EMRServerless_JobRole_S3Tables` | Job execution | EMR Serverless applications |
+
+All roles have full access to your S3 Tables bucket: `sandbox-bucket-fresh`
+
+---
+
+## Troubleshooting
+
+### Issue: Cannot find EMR in service list
+**Solution:** Make sure you're in the correct region (ap-southeast-3)
+
+### Issue: Policy creation fails
+**Solution:** Check that your account ID (339712808680) is correct in the policy JSON
+
+### Issue: Role not appearing in EMR console
+**Solution:** Wait 1-2 minutes for IAM changes to propagate, then refresh the page
+
+---
+
+## Next Steps
+
+After creating these roles, you can:
+1. Create an EMR cluster with Spark
+2. Run Spark jobs to read/write S3 Tables
+3. Use EMR Notebooks to query Iceberg tables
+4. Create EMR Serverless applications
+
+Would you like a guide on creating an EMR cluster next?

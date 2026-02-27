@@ -195,3 +195,4 @@ aws s3tables delete-table-bucket \
 ## Resources
 
 - [AWS S3 Tables Documentation](https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-tables.html)
+

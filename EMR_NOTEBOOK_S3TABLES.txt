@@ -1,0 +1,273 @@
+# EMR Studio Notebook - S3 Tables Guide
+
+Step-by-step guide to read S3 Tables data in EMR Studio Notebook.
+
+---
+
+## Cell 1: Configure Spark Session
+
+```python
+%%configure -f
+{
+    "conf": {
+        "spark.sql.extensions": "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions",
+        "spark.sql.catalog.s3tables": "org.apache.iceberg.spark.SparkCatalog",
+        "spark.sql.catalog.s3tables.catalog-impl": "org.apache.iceberg.aws.s3.S3TablesCatalog",
+        "spark.sql.catalog.s3tables.warehouse": "arn:aws:s3tables:ap-southeast-3:339712808680:bucket/sandbox-bucket-fresh"
+    }
+}
+```
+
+**Run this cell first** (Shift + Enter)
+
+Wait for "Current session configs" message to appear.
+
+---
+
+## Cell 2: Test Connection - List Databases
+
+```python
+%%sql
+SHOW DATABASES
+```
+
+You should see your databases: sales_db, marketing_db, analytics_db
+
+---
+
+## Cell 3: List Tables in sales_db
+
+```python
+%%sql
+SHOW TABLES IN s3tables.sales_db
+```
+
+---
+
+## Cell 4: View Table Schema
+
+```python
+%%sql
+DESCRIBE s3tables.sales_db.daily_sales
+```
+
+---
+
+## Cell 5: Read All Data
+
+```python
+%%sql
+SELECT * FROM s3tables.sales_db.daily_sales
+```
+
+---
+
+## Cell 6: Count Total Rows
+
+```python
+%%sql
+SELECT COUNT(*) as total_rows 
+FROM s3tables.sales_db.daily_sales
+```
+
+---
+
+## Cell 7: Filter Data - February Sales
+
+```python
+%%sql
+SELECT 
+    sale_date,
+    product_category,
+    sales_amount
+FROM s3tables.sales_db.daily_sales
+WHERE sale_date BETWEEN DATE '2024-02-01' AND DATE '2024-02-29'
+ORDER BY sale_date
+```
+
+---
+
+## Cell 8: Aggregate - Sales by Product
+
+```python
+%%sql
+SELECT 
+    product_category,
+    COUNT(*) as units_sold,
+    SUM(sales_amount) as total_revenue,
+    AVG(sales_amount) as avg_price
+FROM s3tables.sales_db.daily_sales
+GROUP BY product_category
+ORDER BY total_revenue DESC
+```
+
+---
+
+## Cell 9: Using PySpark DataFrame API
+
+```python
+# Read table into DataFrame
+df = spark.table("s3tables.sales_db.daily_sales")
+
+# Show data
+df.show()
+
+# Print schema
+df.printSchema()
+
+# Get count
+print(f"Total rows: {df.count()}")
+```
+
+---
+
+## Cell 10: Filter with DataFrame API
+
+```python
+# Filter high-value sales
+high_value = df.filter(df.sales_amount > 500)
+high_value.show()
+
+# Filter by product
+laptops = df.filter(df.product_category == "Laptop")
+laptops.show()
+```
+
+---
+
+## Cell 11: Aggregations with DataFrame API
+
+```python
+from pyspark.sql.functions import sum, avg, count, max, min
+
+# Group by product
+product_stats = df.groupBy("product_category").agg(
+    count("*").alias("units_sold"),
+    sum("sales_amount").alias("total_revenue"),
+    avg("sales_amount").alias("avg_price"),
+    min("sales_amount").alias("min_price"),
+    max("sales_amount").alias("max_price")
+)
+
+product_stats.show()
+```
+
+---
+
+## Cell 12: Time Series Analysis
+
+```python
+from pyspark.sql.functions import date_trunc
+
+# Daily sales summary
+daily_sales = df.groupBy("sale_date").agg(
+    count("*").alias("transactions"),
+    sum("sales_amount").alias("daily_revenue")
+).orderBy("sale_date", ascending=False)
+
+daily_sales.show()
+```
+
+---
+
+## Cell 13: Create Visualization (if supported)
+
+```python
+# Convert to Pandas for visualization
+pandas_df = product_stats.toPandas()
+
+# Display as table
+display(pandas_df)
+```
+
+---
+
+## Cell 14: Export Results
+
+```python
+# Save results to S3 (optional)
+result_df = spark.sql("""
+    SELECT 
+        product_category,
+        SUM(sales_amount) as total_revenue
+    FROM s3tables.sales_db.daily_sales
+    GROUP BY product_category
+""")
+
+# Write to S3 as CSV
+result_df.write.mode("overwrite").csv("s3://your-bucket/results/product_sales.csv", header=True)
+
+print("Results exported to S3!")
+```
+
+---
+
+## Cell 15: Advanced Query - Window Functions
+
+```python
+%%sql
+SELECT 
+    sale_date,
+    product_category,
+    sales_amount,
+    SUM(sales_amount) OVER (PARTITION BY product_category ORDER BY sale_date) as running_total,
+    AVG(sales_amount) OVER (PARTITION BY product_category) as category_avg
+FROM s3tables.sales_db.daily_sales
+ORDER BY product_category, sale_date
+```
+
+---
+
+## Troubleshooting
+
+### Issue: "Catalog not found"
+**Solution:** Make sure Cell 1 (%%configure) ran successfully. Re-run it if needed.
+
+### Issue: "Table not found"
+**Solution:** Check table name is correct: `s3tables.sales_db.daily_sales`
+
+### Issue: "Access denied"
+**Solution:** Verify your EMR Studio execution role has S3 Tables permissions.
+
+### Issue: Session expired
+**Solution:** Re-run Cell 1 to reconfigure the session.
+
+---
+
+## Tips
+
+1. **Always run Cell 1 first** when starting a new session
+2. Use `%%sql` for SQL queries
+3. Use regular Python cells for DataFrame operations
+4. Use `display()` for better table formatting
+5. Save your notebook frequently
+
+---
+
+## Quick Reference
+
+### SQL Magic
+```python
+%%sql
+SELECT * FROM s3tables.sales_db.daily_sales LIMIT 10
+```
+
+### PySpark
+```python
+df = spark.table("s3tables.sales_db.daily_sales")
+df.show()
+```
+
+### Filter
+```python
+df.filter(df.sales_amount > 100).show()
+```
+
+### Aggregate
+```python
+df.groupBy("product_category").count().show()
+```
+
+---
+
+Happy querying! 🚀
