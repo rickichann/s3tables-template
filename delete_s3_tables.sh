@@ -1,7 +1,7 @@
 # Set variables
 
 REGION=""
-BUCKET_S3TABLE="arn:aws:s3tables:<region>:<account-id>:bucket/<table-bucket-name>"
+BUCKET_S3TABLE=""
 
 # Delete all tables in all namespaces
 
